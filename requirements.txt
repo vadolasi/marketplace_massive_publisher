@@ -1,0 +1,15 @@
+certifi==2021.5.30
+charset-normalizer==2.0.4
+colorama==0.4.4
+configparser==5.0.2
+crayons==0.4.0
+greenlet==1.1.1
+idna==3.2
+PySimpleGUI==4.45.0
+requests==2.26.0
+schedule==1.1.0
+selenium==3.141.0
+SQLAlchemy==1.4.22
+ujson==4.0.2
+urllib3==1.26.6
+webdriver-manager==3.4.2
