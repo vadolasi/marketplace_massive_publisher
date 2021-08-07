@@ -53,61 +53,6 @@ def olx():
     for task in database.add_tasks("OLX", ujson.dumps(structure)):
         tasks.add_task(task)
 
-    #! ===================
-
-    driver = webdriver.Chrome(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
-    driver.implicitly_wait(2)
-
-    driver.get("https://olx.com.br/")
-    driver.find_element_by_css_selector("a.sc-jAaTju.gshyPU").click()
-
-    inputs = driver.find_elements_by_css_selector("input.sc-dEoRIm.drdMJh")
-    # inputs[0].send_keys(task.account.email)
-    # inputs[1].send_keys(task.account.password)
-    inputs[0].send_keys("vitor036daniel@protonmail.com")
-    inputs[1].send_keys("03dejunho")
-    driver.find_element_by_css_selector("button.sc-kGXeez.kgGtxX").click()
-
-    # structure = ujson.loads(task.info)
-
-    category = structure["input_category"]
-
-    final_category = driver.find_element_by_id(f"category_item-{category}")
-
-    try:
-        final_category.click()
-    except ElementNotInteractableException:
-        sub_final_category = final_category.get_element.find_element_by_xpath(".//ancestor::ul/following-sibling::a")
-
-        try:
-            sub_final_category.click()
-        except ElementNotInteractableException:
-            sub_final_category.get_element.find_element_by_xpath(".//ancestor::ul/following-sibling::a").click()
-            sub_final_category.click()
-            final_category.click()
-
-    # WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID, f"category_item-{category}"))).click()
-
-    inputs = driver.find_elements_by_xpath("//form[@id='aiform']//input")
-    selects = driver.find_elements_by_xpath("//form[@id='aiform']//select")
-
-    for input_ in inputs:
-        input_type = input_.get_attribute("type")
-        input_id = input_.get_attribute("id")
-        input_response = structure[input_id]
-
-        if input_type == "text":
-            structure[input_id] = input_.get_attribute("value")
-            input_.send_keys(input_response)
-        elif input_type == "checkbox" or input_type == "radio":
-            if input_response and not input_.is_selected():
-                input_.click()
-
-    for select in selects:
-        select_id = select.get_attribute("id")
-        select = Select(select)
-        select.select_by_visible_text(structure[select_id])
-
 
 def run_olx_task(task):
     driver = webdriver.Chrome(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
