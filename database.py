@@ -4,9 +4,9 @@ import enum
 from sqlalchemy import create_engine, Column, Integer, String, Enum, DateTime, ForeignKey
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
-engine = create_engine("sqlite:///:memory:")
+engine = create_engine("sqlite:///database.sqlite3")
 Base = declarative_base()
-Session = sessionmaker(bind=engine)
+Session = sessionmaker(bind=engine, expire_on_commit=False)
 
 
 class SiteEnum(enum.Enum):
@@ -18,10 +18,9 @@ class Account(Base):
     __tablename__ = "accounts"
 
     id = Column(Integer, primary_key=True)
-    account_site = Column(Enum(SiteEnum))
+    site = Column(Enum(SiteEnum))
     email = Column(String)
     password = Column(String)
-    zipcode = Column(Integer)
     tasks = relationship("Task", back_populates="account")
 
 
@@ -46,23 +45,27 @@ def get_pendent_tasks():
     return session.query(Task).filter(Task.datetime > datetime.now()).all()
 
 
-def add_account():
-    pass
+def add_account(site: str, email: str, password: str):
+    session = Session()
+    account = Account(site=SiteEnum(site), email=email, password=password)
+    session.add(account)
+    session.commit()
+    session.close()
 
 
-def add_tasks(site: str, info):
+def add_tasks(site: str, info: dict[str, bool]):
     session = Session()
 
     site = SiteEnum(site)
 
     tasks = []
 
-    c = 1
+    c = 0.0166666666667
     for account in session.query(Account).all():
         task_datetime = datetime.now() + timedelta(hours=c)
         tasks.append(
             Task(
-                site=site,
+                site=SiteEnum(site),
                 datetime=task_datetime,
                 account=account,
                 info=info
