@@ -53,7 +53,7 @@ def add_account(site: str, email: str, password: str):
     session.close()
 
 
-def add_tasks(site: str, info: dict[str, bool]):
+def add_tasks(site: str, info: dict):
     session = Session()
 
     site = SiteEnum(site)
