@@ -1,6 +1,8 @@
-from datetime import datetime, timedelta
 import enum
+import random
+from datetime import datetime, timedelta
 
+import ujson
 from sqlalchemy import create_engine, Column, Integer, String, Enum, DateTime, ForeignKey
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
@@ -45,6 +47,12 @@ def get_pendent_tasks():
     return session.query(Task).filter(Task.datetime > datetime.now()).all()
 
 
+def get_accounts():
+    session = Session()
+
+    return session.query(Account).all()
+
+
 def add_account(site: str, email: str, password: str):
     session = Session()
     account = Account(site=SiteEnum(site), email=email, password=password)
@@ -53,22 +61,25 @@ def add_account(site: str, email: str, password: str):
     session.close()
 
 
-def add_tasks(site: str, info: dict):
+def add_tasks(site: str, info: dict, titles: list, descriptions: list, interval: int):
     session = Session()
 
     site = SiteEnum(site)
 
     tasks = []
 
-    c = 0.0166666666667
+    c = 0
     for account in session.query(Account).all():
-        task_datetime = datetime.now() + timedelta(hours=c)
+        this_info = ujson.loads(info)
+        this_info["input_subject"] = random.choice(titles)
+        this_info["input_body"] = random.choice(descriptions)
+        task_datetime = datetime.now() + timedelta(minutes=interval * c + 1)
         tasks.append(
             Task(
                 site=SiteEnum(site),
                 datetime=task_datetime,
                 account=account,
-                info=info
+                info=ujson.dumps(this_info)
             )
         )
         c += 1
