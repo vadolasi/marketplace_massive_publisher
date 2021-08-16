@@ -61,6 +61,19 @@ def add_account(site: str, email: str, password: str):
     session.close()
 
 
+def edit_account(account: Account, email: str, password: str):
+    session = Session()
+    account.email = email
+    account.password = password
+    session.commit()
+
+
+def delete_account(account: Account):
+    session = Session()
+    session.delete(account)
+    session.commit()
+
+
 def add_tasks(site: str, info: dict, titles: list, descriptions: list, interval: int):
     session = Session()
 
