@@ -4,7 +4,7 @@ from sqlalchemy.sql.sqltypes import Boolean
 
 import ujson
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, desc
-from sqlalchemy.orm import declarative_base, sessionmaker, relationship
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship, selectinload
 
 engine = create_engine("sqlite:///database.sqlite3")
 Base = declarative_base()
@@ -39,7 +39,7 @@ def get_pendent_tasks():
     session = Session()
 
     tasks = session.query(Task).filter(Task.datetime > datetime.now())
-    session.close()
+    # session.close()
 
     return tasks
 
@@ -77,7 +77,6 @@ def edit_account(account: Account, email: str, password: str):
     account.email = email
     account.password = password
     session.commit()
-    session.close()
 
 
 def delete_account(account: Account):
@@ -118,15 +117,14 @@ def add_tasks(info: dict, titles: list, descriptions: list, images: list, interv
 def get_task(task_id: int):
     session = Session()
     task = session.query(Task).get(task_id)
-    session.close()
+    # session.close()
 
     return task
 
 
 def get_tasks():
     session = Session()
-    tasks = session.query(Task).filter(Task.datetime <= datetime.now()).order_by(desc(Task.datetime))
-    session.close()
+    tasks = session.query(Task).options(selectinload(Task.account)).order_by(desc(Task.datetime))
 
     return tasks
 

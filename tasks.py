@@ -9,6 +9,6 @@ scheduler.start()
 def add_task(task):
     scheduler.add_job(
         lambda: web_automation.run_task(task),
-        "date", 
+        "date",
         run_date=task.datetime
     )

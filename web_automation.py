@@ -4,11 +4,13 @@ from tkinter import messagebox
 
 import ujson
 from selenium import webdriver
-from selenium.common.exceptions import ElementNotInteractableException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import Select
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.utils import ChromeType
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
 import database
 
@@ -27,20 +29,19 @@ def create_task():
 
     for account in database.get_accounts():
         try:
-            driver = webdriver.Chrome(ChromeDriverManager(chrome_type=ChromeType.GOOGLE).install())
-            driver.implicitly_wait(30)
+            options = Options() 
+            options.add_argument("--disable-blink-features=AutomationControlled")
+            driver = webdriver.Chrome(ChromeDriverManager(chrome_type=ChromeType.GOOGLE).install(), options=options)
 
             driver.get("https://olx.com.br/")
             time.sleep(random.random())
-            driver.find_element_by_css_selector("a.sc-jAaTju.gshyPU").click()
-
-            inputs = driver.find_elements_by_css_selector("input.sc-dEoRIm.drdMJh")
+            driver.find_element_by_xpath("//*[@id='gatsby-focus-wrapper']/div[1]/div[1]/header/div[3]/div/a").click()
             time.sleep(random.random())
-            send_keys(inputs[0], account.email)
+            send_keys(driver.find_element_by_xpath("//*[@id='__next']/div/div[1]/div[1]/div[2]/form/div[1]/div[2]/input"), account.email)
             time.sleep(random.random())
-            send_keys(inputs[1], account.password)
+            send_keys(driver.find_element_by_xpath("//*[@id='__next']/div/div[1]/div[1]/div[2]/form/div[2]/div[2]/div/div/input"), account.password)
             time.sleep(random.random())
-            driver.find_element_by_css_selector("button.sc-kGXeez.kgGtxX").click()
+            driver.find_element_by_xpath("//*[@id='__next']/div/div[1]/div[1]/div[2]/form/button").click()
 
             messagebox.showinfo(
                 "Antes de prosseguir...",
@@ -81,46 +82,31 @@ def create_task():
 
 
 def run_task(task):
-    driver = webdriver.Chrome(ChromeDriverManager().install())
-    driver.implicitly_wait(2)
+    options = Options() 
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    # options.add_argument("--disable-gpu")
+    driver = webdriver.Chrome(ChromeDriverManager(chrome_type=ChromeType.GOOGLE).install(), options=options)
 
     try:
         driver.get("https://olx.com.br/")
         time.sleep(random.random())
-        driver.find_element_by_css_selector("a.sc-jAaTju.gshyPU").click()
-
-        inputs = driver.find_elements_by_css_selector("input.sc-dEoRIm.drdMJh")
+        driver.find_element_by_xpath("//*[@id='gatsby-focus-wrapper']/div[1]/div[1]/header/div[3]/div/a").click()
         time.sleep(random.random())
-        send_keys(inputs[0], task.account.email)
+        send_keys(driver.find_element_by_xpath("//*[@id='__next']/div/div[1]/div[1]/div[2]/form/div[1]/div[2]/input"), task.account.email)
         time.sleep(random.random())
-        send_keys(inputs[1], task.account.password)
+        send_keys(driver.find_element_by_xpath("//*[@id='__next']/div/div[1]/div[1]/div[2]/form/div[2]/div[2]/div/div/input"), task.account.password)
         time.sleep(random.random())
-        driver.find_element_by_css_selector("button.sc-kGXeez.kgGtxX").click()
+        driver.find_element_by_xpath("//*[@id='__next']/div/div[1]/div[1]/div[2]/form/button").click()
 
         structure = ujson.loads(task.info)
 
         category = structure["input_category"]
 
-        final_category = driver.find_element_by_id(f"category_item-{category}")
 
-        try:
-            time.sleep(random.random())
-            final_category.click()
-        except ElementNotInteractableException:
-            sub_final_category = final_category.find_element_by_xpath("../../../a")
-
-            try:
-                time.sleep(random.random())
-                sub_final_category.click()
-                time.sleep(random.random())
-                final_category.click()
-            except ElementNotInteractableException:
-                time.sleep(random.random())
-                sub_final_category.find_element_by_xpath("../../../a").click()
-                time.sleep(random.random())
-                sub_final_category.click()
-                time.sleep(random.random())
-                final_category.click()
+        time.sleep(random.random())
+        driver.find_element_by_xpath(f"//*[starts-with(@id, 'category_item-{category[:-2]}')]").click()
+        time.sleep(random.random())
+        driver.find_element_by_xpath(f"//*[@id='category_item-{category}']").click()
 
         inputs = driver.find_elements_by_xpath("//form[@id='aiform']//input")
         textareas = driver.find_elements_by_xpath("//form[@id='aiform']//textarea")
@@ -156,23 +142,29 @@ def run_task(task):
         images_input = driver.find_element_by_class_name("box__field")
 
         for image in structure["images"]:
+            time.sleep(random.random())
             images_input.send_keys(image)
 
         time.sleep(random.random())
-        driver.find_element_by_id("aiform").submit()
+        driver.execute_script("arguments[0].click();", WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID, "ad_insertion_submit_button"))))
+        time.sleep(random.random())
+        time.sleep(random.random())
+        driver.execute_script("arguments[0].click();", WebDriverWait(driver, 20).until(EC.element_to_be_clickable((By.ID, "ad_insertion_submit_button"))))
 
         time.sleep(random.random())
         driver.find_element_by_class_name("sc-jAaTju ithrdG").click()
         time.sleep(random.random())
-        driver.find_elements_by_class_name("sc-kGXeez cVvyrS").click()
+        driver.find_element_by_class_name("sc-kGXeez cVvyrS").click()
 
         time.sleep(random.random())
-        driver.find_elements_by_class_name("sc-cmjSyW kMnmL").click()
+        driver.find_element_by_class_name("sc-cmjSyW kMnmL").click()
 
         database.complete_task(task, True)
 
-    except:
+    except Exception as exception:
+        print(exception)
         database.complete_task(task, False)
 
     finally:
-        driver.quit()
+        # driver.quit()
+        pass

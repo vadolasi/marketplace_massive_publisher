@@ -1,4 +1,5 @@
 import tkinter as tk
+from datetime import datetime
 from functools import partial
 from tkinter import ttk, messagebox, filedialog
 
@@ -140,8 +141,25 @@ class AddInfoScreen(Screen):
         self.images = filedialog.askopenfilenames(filetypes=filetypes)
 
     def complete(self):
-        titles = self.titles_input.get("1.0", tk.END)[:-2].split("\n")
-        descriptions = self.descriptions_input.get("1.0", tk.END)[:-2].split("\n---\n")
+        titles = self.titles_input.get("1.0", tk.END).split("\n")
+        descriptions = self.descriptions_input.get("1.0", tk.END).split("\n---\n")
+
+        try:
+            titles.remove("")
+        except ValueError:
+            pass
+        try:
+            titles.remove(" ")
+        except ValueError:
+            pass
+        try:
+            descriptions.remove("")
+        except ValueError:
+            pass
+        try:
+            descriptions.remove(" ")
+        except ValueError:
+            pass
 
         tasks_list = database.add_tasks(
             ujson.dumps(self.structure),
@@ -279,8 +297,12 @@ class PublicationInfo(Screen):
         self.description_text.pack()
         self.datetime_text = tk.Label(self)
         self.datetime_text.pack()
-        self.success_text = tk.Label(self)
-        self.success_text.pack()
+        self.description_text = tk.Label(self)
+        self.description_text.pack()
+        self.account_text = tk.Label(self)
+        self.account_text.pack()
+        self.status_text = tk.Label(self)
+        self.status_text.pack()
         tk.Button(
             self,
             text="Voltar",
@@ -293,13 +315,17 @@ class PublicationInfo(Screen):
         self.title_text.config(text=f"Título: {task_info['input_subject']}")
         self.description_text.config(text=f"Descrição: {task_info['input_body']}")
         self.datetime_text.config(
-            text=f"Data e hora: {task.datetime.day}/{task.datetime.month}/{task.datetime.year}"
+            text=f"Data e hora de execução: {task.datetime.day}/{task.datetime.month}/{task.datetime.year}"
             f" às {task.datetime.hour}:{task.datetime.minute}"
         )
+        self.account_text.config(text=f"Conta: {task.account.email}")
+
         if task.success:
-            self.success_text.config(text="A publicação foi feita com sucesso")
+            self.status_text.config(text="A publicação foi feita com sucesso")
+        elif task.success is False:
+            self.status_text.config(text="A publicação não ocorreu com sucesso")
         else:
-            self.success_text.config(text="A publicação não ocorreu com sucesso")
+            self.status_text.config(text="A publicação ainda não ocorreu")
 
 
 class App(tk.Tk):
